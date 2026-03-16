@@ -156,7 +156,8 @@ cron.schedule('*/2 * * * *', () => {
 });
 
 // Check mentions every 15 minutes
-cron.schedule('*/15 * * * *', () => {
+cron.schedule('*/1 * * * *', () => {
+
   console.log(`[CRON] Checking mentions...`);
   replyToMentions();
 });
