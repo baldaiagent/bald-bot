@@ -150,7 +150,7 @@ console.log('╚═════════════════════�
 postTweet();
 
 // Post every 2 hours
-cron.schedule('0 */2 * * *', () => {
+cron.schedule('*/2 * * * *', () => {
   console.log(`\n[CRON] Posting tweet at ${new Date().toISOString()}`);
   postTweet();
 });
