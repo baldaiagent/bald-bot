@@ -91,8 +91,8 @@ async function postTweet() {
   console.log(`[TWEET] ${tweet}`);
 
   try {
-    const result = await rw.v2.tweet(tweet);
-    console.log(`[POSTED] https://x.com/BaldAgentFun/status/${result.data.id}`);
+    const result = await rw.v1.tweet(tweet);
+    console.log('[POSTED] https://x.com/BaldAgentFun/status/' + result.id_str);
   } catch (err) {
     console.error('[POST ERROR]', err.message);
   }
@@ -101,15 +101,14 @@ async function postTweet() {
 // ── REPLY TO MENTIONS ──
 async function replyToMentions() {
   try {
-    const me = await rw.v2.me();
-    const params = { max_results: 10 };
+    const params = { count: 10 };
     if (lastMentionId) params.since_id = lastMentionId;
 
-    const mentions = await rw.v2.mentionTimeline(me.data.id, params);
-    const tweets = mentions.data?.data;
+    const mentions = await rw.v1.mentionTimeline(params);
+    const tweets = mentions;
     if (!tweets || tweets.length === 0) return;
 
-    lastMentionId = tweets[0].id;
+    lastMentionId = tweets[0].id_str;
 
     for (const mention of tweets.reverse()) {
       console.log(`\n[MENTION] ${mention.text}`);
@@ -120,7 +119,7 @@ async function replyToMentions() {
         system: SYSTEM,
         messages: [{
           role: 'user',
-          content: `someone mentioned you on X saying: "${mention.text}". reply to them in character as the bald agent. keep it under 200 chars. don't start with "i" — vary your openings.`
+          content: 'someone mentioned you on X saying: "' + mention.full_text + '". reply to them in character as the bald agent. keep it under 200 chars. don't start with "i" — vary your openings.`
         }]
       });
 
@@ -128,7 +127,7 @@ async function replyToMentions() {
       console.log(`[REPLY] ${reply}`);
 
       try {
-        await rw.v2.reply(reply, mention.id);
+        await rw.v1.reply(reply, mention.id);
         console.log(`[REPLIED] to ${mention.id}`);
         await new Promise(r => setTimeout(r, 3000));
       } catch (err) {
@@ -150,14 +149,13 @@ console.log('╚═════════════════════�
 postTweet();
 
 // Post every 2 hours
-cron.schedule('*/2 * * * *', () => {
+cron.schedule('0 */2 * * *', () => {
   console.log(`\n[CRON] Posting tweet at ${new Date().toISOString()}`);
   postTweet();
 });
 
 // Check mentions every 15 minutes
-cron.schedule('*/1 * * * *', () => {
-
+cron.schedule('*/15 * * * *', () => {
   console.log(`[CRON] Checking mentions...`);
   replyToMentions();
 });
